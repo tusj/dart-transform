@@ -1,0 +1,7 @@
+name: encodable
+description: A sample command-line application
+#dev_dependencies:
+#  unittest: any
+dependencies:
+  zip:
+    path: ../zip
