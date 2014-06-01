@@ -177,20 +177,26 @@ abstract class Decodable implements Decoder, Validator {
 
       // Is map? Try to call fromMap
       if (val is Map) {
+        var valSpecific = reflect(val).type.typeArguments;
+        var valKey = valSpecific.first;
+        var valVal = valSpecific.last;
         
-        var newObject = reflectClass(v.type.reflectedType).newInstance(new Symbol(''), []).reflectee;
+        var vSpecific = v.type.typeArguments;
         
-        try {
-          var canSet = newObject._set(val);
-          if (canSet) {
-            setIfNotValidate(v.simpleName, newObject);
+        var vKey = vSpecific.first;
+        var vVal = vSpecific.last;
+        
+        if (valKey.reflectedType == dynamic || valVal.reflectedType == dynamic) {
+          if (zip([val.keys, val.values]).every(
+              (e) => reflect(e.first).type.isAssignableTo(vKey) &&
+                     reflect(e.last).type.isAssignableTo(vVal))) {
+            setIfNotValidate(v.simpleName, val);
             continue;
           }
-        } catch (e) {
-          if (validateOnly) {
-            return false;
-          }
-          throwInvalidAssignment(m, name, v);
+        }
+       
+        if (validateOnly) {
+          return false;
         }
       }
       

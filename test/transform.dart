@@ -214,7 +214,7 @@ void main() {
           expect(new SpecificMap().validate({'a': {'a': 1}}), isFalse);
         });
         
-        solo_test('general, correct content type', () {
+        test('general, correct content type', () {
           expect(new SpecificMap().validate({'a': {'a': 'a'}}), isTrue);
         });
       });
