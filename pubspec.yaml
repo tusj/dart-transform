@@ -5,3 +5,5 @@ description: A sample command-line application
 dependencies:
   zip:
     path: ../zip
+  tuple:
+    path: ../tuple

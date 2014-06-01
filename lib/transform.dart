@@ -1,7 +1,8 @@
-library utility;
+library transform;
 
 import 'dart:mirrors';
 import 'package:zip/zip.dart';
+import 'package:tuple/tuple.dart';
 
 final toJsonMaxDepth = 100;
 
@@ -70,51 +71,15 @@ abstract class Encodable implements Encoder {
     };
     
     InstanceMirror im = reflect(this);
-    
-    
     ClassMirror cm = im.type;
     
-    var isPrivate = (e) => !e.last.isPrivate;
-    var isVariableMirror = (e) => e.last is VariableMirror;
-    var isGetter = (e) => e.last.isGetter;
     
-    var hereVars = zip([cm.declarations.keys,
-                         cm.declarations.values])
-    .where((e) => e.last is VariableMirror)
-    .where((e) => !e.last.isPrivate);
-    
-    
-    Iterable superVars;
-    if (cm.superclass != null) {
-      superVars = zip([cm.superclass.declarations.keys,
-                        cm.superclass.declarations.values])
-                        .where((e) => (e.last is MethodMirror) ? e.last.isGetter : true);
-    }
-    
-    cm.superinterfaces.forEach(print);
-    print(cm.superclass);
-    cm.superclass.declarations.values.forEach(print);
-//    print(cm.superclass.getField(new Symbol('a')));
-    
-    cm.superclass.declarations.keys.forEach(print);
-    print("");
-    superVars.forEach(print);
-    
-    print("");
-    print("");
-    
-    cm.declarations.keys.forEach(print);
-    print("");
-    hereVars.forEach(print);
-    print("");
-    print("");
-    
-    var vars = [hereVars, superVars]
-    .expand((e) => e)
-        .map((e) => new _Tuple<Symbol, DeclarationMirror>(e.first, e.last));
-    
-    vars.forEach(print);
-    
+    var vars = zip([cm.instanceMembers.keys, cm.instanceMembers.values])
+        .where((e) => e.last.isGetter)
+        .where((e) => !e.last.isPrivate)
+        .where((e) => e.last.isSynthetic) // TODO Add test for non-synthetic
+        .map((e) => new Tuple<Symbol, MethodMirror>(e.first, e.last));
+ 
     for (var field in vars) {
       var s = field.first;
       var v = field.last;
@@ -200,25 +165,20 @@ abstract class Decodable implements Decoder, Validator {
     
     // For every field
     for (var k in varsKeys) {
-      print("k: $k"); 
       var v = cm.declarations[k] as VariableMirror;
       var name = MirrorSystem.getName(k);
       var val = m[name];
 
       // Is directly assignable?
       if (reflect(val).type.isAssignableTo(v.type)) {
-        print("assignable");
         setIfNotValidate(v.simpleName, val);
         continue;
       }
 
       // Is map? Try to call fromMap
       if (val is Map) {
-        print("map");
         
         var newObject = reflectClass(v.type.reflectedType).newInstance(new Symbol(''), []).reflectee;
-        print(newObject.runtimeType);
-//        var newObject = im.getField(v.simpleName).type.newInstance(new Symbol(''), []).reflectee;
         
         try {
           var canSet = newObject._set(val);
@@ -227,7 +187,6 @@ abstract class Decodable implements Decoder, Validator {
             continue;
           }
         } catch (e) {
-          print("map validate error: $e");
           if (validateOnly) {
             return false;
           }
@@ -237,7 +196,6 @@ abstract class Decodable implements Decoder, Validator {
       
       // Is list? Check if list content is correct type
       if (val is List) {
-        print("list");
         var valSpecific = reflect(val).type.typeArguments.first;
         var vSpecific   = v.type.typeArguments.first;
         

@@ -83,9 +83,7 @@ void main() {
       });
       
       test('inherited', () {
-        var e = new Extended();
-        e.a = "blob";
-        expect(e.toJson(), equals(extendedMap));
+        expect(new Extended().toJson(), equals(extendedMap));
       });
       
       test('multiple inherit', () {
@@ -139,6 +137,10 @@ void main() {
       test('inherited', () {
         var e = new Extended()..fromMap(extendedMap);
         expect(e.toJson(), equals(extendedMap));
+      });
+      
+      test('multiple inherited', () {
+        expect(new MultipleExtended().toJson(), equals(extendedMap));
       });
       
       test('specific sub', () {
@@ -212,7 +214,7 @@ void main() {
           expect(new SpecificMap().validate({'a': {'a': 1}}), isFalse);
         });
         
-        test('general, correct content type', () {
+        solo_test('general, correct content type', () {
           expect(new SpecificMap().validate({'a': {'a': 'a'}}), isTrue);
         });
       });
