@@ -20,9 +20,9 @@ void main() {
   var to = new A()..fromMap(json); // parse from map
   // "to" now contains same content as "from"
 }
-```  
+```
 
 ## Status
-Mostly working, but some unit tests involving encoding extended objects are failing.
+All unittests passing, but could use some more unittests.
+Some ugly code should be cleaned up.
 No performance optimization has been done.
-Could use some more unit tests.
