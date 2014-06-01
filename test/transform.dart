@@ -191,6 +191,10 @@ void main() {
           expect(new SpecificList().validate({'a': new List<String>()}), isTrue);
         });
         
+        test('not a list on a list', () {
+          expect(new SpecificList().validate({'a': 1}), isFalse);
+        });
+        
         test('general, wrong content type', () {
           expect(new SpecificList().validate({'a': [1]}), isFalse);
         });
