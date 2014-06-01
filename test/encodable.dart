@@ -1,6 +1,6 @@
 library test;
 
-import 'package:encodable/transform.dart';
+import 'package:encodable/encodable.dart';
 import 'package:unittest/unittest.dart';
 
 class Test {

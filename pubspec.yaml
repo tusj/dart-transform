@@ -1,5 +1,5 @@
 name: encodable
-description: A sample command-line application
+description: Utility functions allowing any class to be encoded to JSON and to set its fields from a map
 #dev_dependencies:
 #  unittest: any
 dependencies:
