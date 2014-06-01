@@ -177,29 +177,48 @@ abstract class Decodable implements Decoder, Validator {
 
       // Is map? Try to call fromMap
       if (val is Map) {
-        var valSpecific = reflect(val).type.typeArguments;
-        var valKey = valSpecific.first;
-        var valVal = valSpecific.last;
         
-        var vSpecific = v.type.typeArguments;
+        if (reflectClass(Map).isSubclassOf(v.type)) {
+          var valSpecific = reflect(val).type.typeArguments;
+          var valKey = valSpecific.first;
+          var valVal = valSpecific.last;
         
-        var vKey = vSpecific.first;
-        var vVal = vSpecific.last;
+          var vSpecific = v.type.typeArguments;
         
-        if (valKey.reflectedType == dynamic || valVal.reflectedType == dynamic) {
-          if (zip([val.keys, val.values]).every(
-              (e) => reflect(e.first).type.isAssignableTo(vKey) &&
-                     reflect(e.last).type.isAssignableTo(vVal))) {
-            setIfNotValidate(v.simpleName, val);
-            continue;
+          var vKey = vSpecific.first;
+          var vVal = vSpecific.last;
+        
+          if (valKey.reflectedType == dynamic || valVal.reflectedType == dynamic) {
+            if (zip([val.keys, val.values]).every(
+                (e) => reflect(e.first).type.isAssignableTo(vKey) &&
+                       reflect(e.last).type.isAssignableTo(vVal))) {
+              setIfNotValidate(v.simpleName, val);
+              continue;
+            }
+          }
+       
+          if (validateOnly) {
+            return false;
+          }
+        } else {
+          try {
+            var objIm = im.getField(v.simpleName);
+            if (objIm.reflectee == null) {
+              var newObj = reflectClass(v.type.reflectedType).newInstance(new Symbol(''), []);
+              im.setField(v.simpleName, newObj.reflectee);
+            }
+            
+            var obj = im.getField(v.simpleName).reflectee;
+
+            var success = obj._set(val);
+            if (success) {
+              continue;
+            }
+          } catch(e) {
+            print(e);
           }
         }
-       
-        if (validateOnly) {
-          return false;
-        }
       }
-      
       // Is list? Check if list content is correct type
       if (val is List) {
         var valSpecific = reflect(val).type.typeArguments.first;
