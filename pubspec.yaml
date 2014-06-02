@@ -1,9 +1,9 @@
 name: encodable
 description: Utility functions allowing any class to be encoded to JSON and to set its fields from a map
-#dev_dependencies:
-#  unittest: any
 dependencies:
-  zip:
-    path: ../zip
   tuple:
     path: ../tuple
+  zip:
+    path: ../zip
+dev_dependencies:
+  unittest: any
